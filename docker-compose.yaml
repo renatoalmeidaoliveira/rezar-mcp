@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mcp-server:
+    build: .
+    container_name: mcp-server
+    restart: unless-stopped
+    environment:
+      - NETBOX_API_TOKEN=${NETBOX_API_TOKEN}
+    networks:
+      - bw-services
+
+networks:
+  bw-services:
+    external: true
+    name: bw-services
