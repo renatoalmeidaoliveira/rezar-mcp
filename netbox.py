@@ -12,7 +12,8 @@ NETBOX_URL = "http://netbox:8080/api/"
 
 
 async def get(endpoint, params={}):
-    slugfyed_fields = ['site']
+    slugfyed_fields = ['site', 'manufacturer', 'cluster_group', 'device_type',
+                       'model','tenant',]
     api_token = os.environ.get("NETBOX_API_TOKEN")
     api_url = NETBOX_URL
     url = f"{api_url}{endpoint}"
