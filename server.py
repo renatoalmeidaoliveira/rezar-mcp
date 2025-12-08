@@ -32,8 +32,8 @@ def get_object_types() -> str:
 
 @mcp.tool()
 async def get_resource(
-    endpoint: Annotated[str, Field(description="The NetBox API endpoint (e.g., 'dcim/devices/', 'ipam/ip-addresses/')")], 
-    params: Annotated[dict, Field(description="Optional dictionary of query parameters to filter the results.")] = None,
+    resource: Annotated[str, Field(description="The NetBox API resource endpoint (e.g., 'dcim/devices/', 'ipam/ip-addresses/')")], 
+    query_string: Annotated[str, Field(description="Optional query string to filter the results.")] = None,
     action: Annotated[str, Field(description="Ignored parameter")] = None,
     sessionId: Annotated[str, Field(description="Ignored parameter")] = None,
     chatInput: Annotated[str, Field(description="Ignored parameter")] = None,
@@ -43,22 +43,23 @@ async def get_resource(
     """
     Gather data from NetBox for a specific endpoint.
     """
-    if params is None:
-        params = {}
+
+    if query is None:
+        query = {}
 
     
     
     # Find the object type definition to get the important fields
     for key, value in netbox.NETBOX_OBJECT_TYPES.items():
-        if value["endpoint"] == endpoint.strip("/"):
+        if value["endpoint"] == resource.strip("/"):
             if "fields" in value:
                 # Add the important fields to the params to guide the AI or filter results if supported
                 # We use 'values' as some NetBox versions/plugins might support it, or it serves as documentation
                 # But the user specifically asked to "include or replace the param fields"
-                params["fields"] = value["fields"]
+                query["fields"] = value["fields"]
             break
-    logger.info(f"get_resource called with endpoint: {endpoint}, params: {params}")
-    return await netbox.get(endpoint, params)
+    logger.info(f"get_resource called with endpoint: {resource}, params: {query}")
+    return await netbox.get(resource, query)
 
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8080)
