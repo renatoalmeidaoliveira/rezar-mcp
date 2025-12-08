@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 NETBOX_URL = "http://netbox:8080/api/"
 
 
+
 async def get(endpoint, params={}):
+    slugfyed_fields = ['site']
     api_token = os.environ.get("NETBOX_API_TOKEN")
     api_url = NETBOX_URL
     url = f"{api_url}{endpoint}"
@@ -18,6 +20,9 @@ async def get(endpoint, params={}):
         "accept": "application/json",
         "Authorization": f"Token {api_token}",
     }
+    for field in slugfyed_fields:
+        if f"{field}__slug" in params:
+            params[field] = params.pop(f"{field}__slug")[0]
     if "limit" not in params:
         params["limit"] = 1000
     if "fields" in params:
