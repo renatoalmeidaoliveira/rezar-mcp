@@ -20,6 +20,8 @@ async def get(endpoint, params={}):
     }
     if "limit" not in params:
         params["limit"] = 1000
+    if "fields" in params:
+        params["fields"] = ",".join(params["fields"])
     output = {}
     try:
         async with aiohttp.ClientSession() as session:
