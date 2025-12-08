@@ -5,6 +5,8 @@ import logging
 from typing import Annotated
 from pydantic import Field
 
+from urllib.parse import parse_qs
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ def get_object_types() -> str:
     return json.dumps(netbox.NETBOX_OBJECT_TYPES, indent=2)
 
 @mcp.tool()
-async def get_resource(
+async def get_resources(
     resource: Annotated[str, Field(description="The NetBox API resource endpoint (e.g., 'dcim/devices/', 'ipam/ip-addresses/')")], 
     query_string: Annotated[str, Field(description="Optional query string to filter the results.")] = None,
     action: Annotated[str, Field(description="Ignored parameter")] = None,
@@ -41,8 +43,10 @@ async def get_resource(
     toolCallId: Annotated[str, Field(description="Ignored parameter")] = None,
 ) -> dict:
     """
-    Gather data from NetBox for a specific endpoint.
+    Gather all models matching the query from NetBox for a specific resource.
     """
+
+    query = parse_qs(query_string) if query_string else None
 
     if query is None:
         query = {}
