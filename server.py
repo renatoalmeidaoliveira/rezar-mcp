@@ -35,7 +35,7 @@ def get_object_types() -> str:
 @mcp.tool()
 async def get_resources(
     resource: Annotated[str, Field(description="The NetBox API resource endpoint (e.g., 'dcim/devices/', 'ipam/ip-addresses/')")], 
-    query_string: Annotated[str, Field(description="Optional query string to filter the results.")] = None,
+    query_string: Annotated[str, Field(description="Optional query string to filter the results, some parameters are queried using slugs, for example use site instead of site__slug")] = None,
     action: Annotated[str, Field(description="Ignored parameter")] = None,
     sessionId: Annotated[str, Field(description="Ignored parameter")] = None,
     chatInput: Annotated[str, Field(description="Ignored parameter")] = None,

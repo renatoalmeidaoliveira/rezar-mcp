@@ -43,6 +43,7 @@ async def get(endpoint, params={}):
         return output
     except Exception as e:
         logger.error(f"{e}")
+        raise LookupError(f"Failed to get data from NetBox endpoint {endpoint} with reason {e}")
         return None
 
 
