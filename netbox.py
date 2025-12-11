@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-NETBOX_URL = "http://netbox:8080/api/"
+NETBOX_URL = "http://netbox:8080/"
 
 
 
@@ -15,7 +15,7 @@ async def get(endpoint, params={}):
     slugfyed_fields = ['site', 'manufacturer', 'cluster_group', 'device_type',
                        'model','tenant',]
     api_token = os.environ.get("NETBOX_API_TOKEN")
-    api_url = NETBOX_URL
+    api_url = f"{NETBOX_URL}api/"
     url = f"{api_url}{endpoint}"
     headers = {
         "accept": "application/json",
@@ -53,9 +53,31 @@ async def get(endpoint, params={}):
         return None
 
 
+async def graphql_get(query):
+    api_token = os.environ.get("NETBOX_API_TOKEN")
+    url = f"{NETBOX_URL}graphql/"
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Token {api_token}",
+        "Content-Type": "application/json",
+    }
+    payload = {"query": query}
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=payload) as r:
+                response = await r.json()
+                if r.status != 200:
+                    raise LookupError(response)
+                return response
+    except Exception as e:
+        logger.error(f"{e}")
+        raise LookupError(f"Failed to get data from NetBox graphql with reason {e}")
+        return None
+
+
 async def patch(endpoint, payload={}):
     api_token = os.environ.get("NETBOX_API_TOKEN")
-    api_url = NETBOX_URL
+    api_url = f"{NETBOX_URL}api/"
     url = f"{api_url}{endpoint}"
     headers = {
         "accept": "application/json",
@@ -76,7 +98,7 @@ async def patch(endpoint, payload={}):
 
 async def post(endpoint, payload={}):
     api_token = os.environ.get("NETBOX_API_TOKEN")
-    api_url = NETBOX_URL
+    api_url = f"{NETBOX_URL}api/"
     url = f"{api_url}{endpoint}"
     headers = {
         "accept": "application/json",
@@ -97,7 +119,7 @@ async def post(endpoint, payload={}):
 
 async def delete(endpoint, model_id):
     api_token = os.environ.get("NETBOX_API_TOKEN")
-    api_url = NETBOX_URL
+    api_url = f"{NETBOX_URL}api/"
     url = f"{api_url}{endpoint}{model_id}/"
     headers = {
         "accept": "application/json",
