@@ -3,11 +3,15 @@ import os
 import aiohttp
 import asyncio
 import logging
+import validation
+
+from fastmcp.exceptions import ToolError
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-NETBOX_URL = "http://netbox:8080/"
+NETBOX_URL = os.environ.get("NETBOX_URL") or "http://netbox:8080/" 
 
 
 
@@ -29,6 +33,14 @@ async def get(endpoint, params={}):
     if "fields" in params:
         params["fields"] = ",".join(params["fields"])
     output = {}
+    try:
+        await validation.validate_path(await validation.get_schema(), f"/api/{endpoint}")
+    except ValueError as e:
+        raise ToolError(str(e))        
+    try:
+        await validation.validate_query_params(await validation.get_schema(), f"/api/{endpoint}", params)
+    except ValueError as e:
+        raise ToolError(str(e))
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as r:

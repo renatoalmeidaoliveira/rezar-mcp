@@ -7,6 +7,7 @@ services:
     restart: unless-stopped
     environment:
       - NETBOX_API_TOKEN=${NETBOX_API_TOKEN}
+      - NETBOX_URL=${NETBOX_URL}
     networks:
       - bw-services
 

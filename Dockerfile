@@ -7,5 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY netbox.py .
 COPY server.py .
+COPY validation.py .
 
 CMD ["python", "server.py"]

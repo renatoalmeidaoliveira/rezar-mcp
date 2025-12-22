@@ -1,10 +1,11 @@
 from fastmcp import FastMCP
 import netbox
+import validation
 import json
 import logging
 from typing import Annotated
-from pydantic import Field
 
+from pydantic import Field
 from urllib.parse import parse_qs
 
 # Configure logging
@@ -77,18 +78,6 @@ async def get_resources(
     if query is None:
         query = {}
 
-    
-    
-    # Find the object type definition to get the important fields
-    for key, value in netbox.NETBOX_OBJECT_TYPES.items():
-        if value["endpoint"] == resource.strip("/"):
-            if "fields" in value:
-                # Add the important fields to the params to guide the AI or filter results if supported
-                # We use 'values' as some NetBox versions/plugins might support it, or it serves as documentation
-                # But the user specifically asked to "include or replace the param fields"
-                query["fields"] = value["fields"]
-            break
-    logger.info(f"get_resource called with endpoint: {resource}, params: {query}")
     return await netbox.get(resource, query)
 
 @mcp.tool()
