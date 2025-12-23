@@ -4,6 +4,7 @@ import aiohttp
 import asyncio
 import logging
 import validation
+import re
 
 from fastmcp.exceptions import ToolError
 
@@ -13,6 +14,55 @@ logger = logging.getLogger(__name__)
 
 NETBOX_URL = os.environ.get("NETBOX_URL") or "http://netbox:8080/" 
 
+
+async def get_field_choices(endpoint, field_name):
+    api_token = os.environ.get("NETBOX_API_TOKEN")
+    api_url = f"{NETBOX_URL}api/"
+    url = f"{api_url}{endpoint}"
+    params = {
+        "limit": 0,
+        "fields": field_name,}
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Token {api_token}",
+    }
+    choices = set()
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers, params=params) as r:
+                response = await r.json()
+                if r.status != 200:
+                    raise LookupError(response)
+                response = await r.json()
+                for item in response["results"]:
+                    if field_name in item and item[field_name] is not None:
+                        value = item[field_name]
+                        if isinstance(value, dict):
+                            slug = value.get("slug")
+                            if slug:
+                                choices.add(slug)
+                        else:
+                            choices.add(value)
+            while response["next"] is not None:
+                async with session.get(
+                    response["next"], headers=headers, params=params
+                ) as r:
+                    response = await r.json()
+                    for item in response["results"]:
+                        if field_name in item and item[field_name] is not None:
+                            value = item[field_name]
+                            if isinstance(value, dict):
+                                slug = value.get("slug")
+                                if slug:
+                                    choices.add(slug)
+                            else:
+                                choices.add(value)
+        logger.info(f"netbox.get_field_choices called with endpoint: {endpoint}, field_name: {field_name}, choices: {choices}")
+        return list(choices)
+    except Exception as e:
+        logger.error(f"{e}")
+        raise LookupError(f"Failed to get field choices from NetBox endpoint {endpoint} field {field_name} with reason {e}")
+        return None
 
 
 async def get(endpoint, params={}):
@@ -45,7 +95,17 @@ async def get(endpoint, params={}):
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as r:
                 response = await r.json()
-                if r.status != 200:
+                if r.status == 400:
+                    errors = []
+                    choices_re = re.compile(r'Select a valid choice. .+? is not one of the available choices.')
+                    for field in response:
+                        for message in response[field]:
+                            if choices_re.match(message):
+                                field_choices = await get_field_choices(endpoint, field)
+                                error_message = f"Invalid choice for field '{field}': Available choices are: {field_choices}"
+                                errors.append(error_message)
+                    raise ToolError("\n".join(errors))
+                elif r.status != 200:
                     raise LookupError(response)
                 response = await r.json()
                 output["count"] = response["count"]
