@@ -117,7 +117,6 @@ async def get(endpoint, params={}):
                 ) as r:
                     response = await r.json()
                     output["results"] = output["results"] + response["results"]
-        logger.info(f"netbox.get called with endpoint: {endpoint}, output: {output}")
         return output
     except Exception as e:
         logger.error(f"{e}")

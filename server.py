@@ -34,6 +34,7 @@ mcp = FastMCP(
 @mcp.resource("netbox://object-types")
 def get_object_types() -> str:
     """Return the list of available NetBox object types and their endpoints."""
+    logger.info("get_object_types called")
     return json.dumps(netbox.NETBOX_OBJECT_TYPES, indent=2)
 
 @mcp.resource("netbox://graphql-schema")
