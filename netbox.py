@@ -92,7 +92,7 @@ async def get(endpoint, params={}):
     not_validated_fields = {}
     for field in params:
         assessors = field.split("__")
-        if len(assessors) >= 2:
+        if len(assessors) >= 3:
             raise ToolError("Only one level of field lookup is supported, e.g., 'site__slug'")
         else:
             base_field = assessors[0]
