@@ -92,8 +92,6 @@ async def get(endpoint, params={}):
     except ValueError as e:
         raise ToolError(str(e))
 
-    for field in not_validated_fields:
-        params[field] = not_validated_fields[field]
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as r:
