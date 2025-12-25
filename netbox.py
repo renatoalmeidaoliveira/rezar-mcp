@@ -68,15 +68,6 @@ async def get_field_choices(endpoint, field_name):
 async def get(endpoint, params={}):
     slugfyed_fields = ['site', 'manufacturer', 'cluster_group', 'device_type',
                        'model','tenant',]
-    model_assesors = ['site', 'manufacturer', 'cluster_group', 'device_type',
-                       'device','tenant',  'contact', 'group', 'role', 'platform', 'location',
-                       'rack', 'region', 'type', 'provider', 'circuit', 'virtual_circuit',
-                       'power_panel', 'power_port', 'power_feed', 'module_type', 'module',
-                       'interface', 'front_port', 'rear_port', 'console_port', 'console_server_port',
-                       'cluster', 'virtual_device_context', 'vrf', 'vlan', 'prefix', 'aggregate',
-                       'asn', 'asn_range', 'fhrp_group', 'ip_address', 'ip_range',
-                       'service', 'device_role', 'rack_role', 
-                       'circuit_type', 'virtual_circuit_type',]
     api_token = os.environ.get("NETBOX_API_TOKEN")
     api_url = f"{NETBOX_URL}api/"
     url = f"{api_url}{endpoint}"
@@ -84,23 +75,14 @@ async def get(endpoint, params={}):
         "accept": "application/json",
         "Authorization": f"Token {api_token}",
     }
+    for field in slugfyed_fields:
+        if f"{field}__slug" in params:
+            params[field] = params.pop(f"{field}__slug")[0]
     if "limit" not in params:
         params["limit"] = 1000
     if "fields" in params:
         params["fields"] = ",".join(params["fields"])
     output = {}
-    not_validated_fields = {}
-    for field in params:
-        assessors = field.split("__")
-        if len(assessors) >= 3:
-            raise ToolError("Only one level of field lookup is supported, e.g., 'site__slug'")
-        else:
-            base_field = assessors[0]
-            if base_field in slugfyed_fields:
-                if assessors[1] == "slug":
-                    params[base_field] = params.pop(field)[0]
-                elif assessors[1] in model_assesors:
-                    not_validated_fields[field] = params.pop(field)
     try:
         await validation.validate_path(await validation.get_schema(), f"/api/{endpoint}")
     except ValueError as e:
@@ -109,6 +91,7 @@ async def get(endpoint, params={}):
         await validation.validate_query_params(await validation.get_schema(), f"/api/{endpoint}", params)
     except ValueError as e:
         raise ToolError(str(e))
+
     for field in not_validated_fields:
         params[field] = not_validated_fields[field]
     try:
