@@ -78,7 +78,10 @@ async def get_resources(
 
     if query is None:
         query = {}
-
+    if not resource.endswith('/'):
+        resource += '/'
+    if resource.startswith('/api/'):
+        resource = resource[5:]
     return await netbox.get(resource, query)
 
 @mcp.tool()
