@@ -46,6 +46,7 @@ async def validate_query_params(schema, path, query_params):
                        'circuit_type', 'virtual_circuit_type',]
     not_validated_fields = {}
     validated_fields = {}
+    params = query_params.copy()
     for field in params:
         assessors = field.split("__")
         if len(assessors) >= 3:
