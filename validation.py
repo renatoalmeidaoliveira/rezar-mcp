@@ -50,7 +50,7 @@ async def validate_query_params(schema, path, query_params):
     for field in params:
         assessors = field.split("__")
         if len(assessors) >= 3:
-            raise ToolError("Only one level of field lookup is supported, e.g., 'site__slug'")
+            raise ValueError("Only one level of field lookup is supported, e.g., 'site__slug'")
         if len(assessors) == 2:
             if assessors[1] in model_assesors:
                 not_validated_fields[field] = params[field]
