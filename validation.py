@@ -57,7 +57,8 @@ async def validate_query_params(schema, path, query_params):
             else:
                 validated_fields[field] = params[field]
         else:
-            validated_fields[field] = params[field]
+            if field != "fields":
+                validated_fields[field] = params[field]
     schema_params = schema.get("paths", {}).get(path, {}).get("get", {}).get("parameters", [])
     valid_params = {param["name"] for param in schema_params}
     invalid_params = [param for param in validated_fields.keys() if param not in valid_params]
