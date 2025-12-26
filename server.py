@@ -63,12 +63,14 @@ async def get_graphql_schema() -> str:
 @mcp.tool()
 async def get_resources(
     resource: Annotated[str, Field(description="The NetBox API resource endpoint (e.g., 'dcim/devices/', 'ipam/ip-addresses/')")], 
-    query_string: Annotated[str, Field(description="Optional query string to filter the results, some parameters are queried using slugs, for example use site instead of site__slug")] = None,
-    action: Annotated[str, Field(description="Ignored parameter")] = None,
-    sessionId: Annotated[str, Field(description="Ignored parameter")] = None,
-    chatInput: Annotated[str, Field(description="Ignored parameter")] = None,
-    metadata: Annotated[dict, Field(description="Ignored parameter")] = None,
-    toolCallId: Annotated[str, Field(description="Ignored parameter")] = None,
+    query_string: Annotated[str | None, Field(description="Optional query string to filter the results, some parameters are queried using slugs, for example use site instead of site__slug")] = None,
+    action: Annotated[str | None, Field(description="Ignored parameter")] = None,
+    sessionId: Annotated[str | None, Field(description="Ignored parameter")] = None,
+    sessionid: Annotated[str | None, Field(description="Ignored parameter (alias)")] = None,
+    chatInput: Annotated[str | None, Field(description="Ignored parameter")] = None,
+    metadata: Annotated[dict | None, Field(description="Ignored parameter")] = None,
+    toolCallId: Annotated[str | None, Field(description="Ignored parameter")] = None,
+    tool: Annotated[str | None, Field(description="Ignored parameter")] = None,
 ) -> dict:
     """
     Gather all models matching the query from NetBox for a specific resource.
@@ -83,6 +85,7 @@ async def get_resources(
     if resource.startswith('/api/'):
         resource = resource[5:]
     return await netbox.get(resource, query)
+
 
 @mcp.tool()
 async def query_netbox_relationships(
@@ -105,6 +108,7 @@ async def query_netbox_relationships(
     """
     logger.info(f"query_netbox_relationships called with query: {query}")
     return await netbox.graphql_get(query)
+
 
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8080)
